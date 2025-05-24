@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iris Digital College</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for black and white theme */
+        .gradient-bg {
+            background: #000000;
+        }
+        .neon-text {
+            color: #FFFFFF;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        .glassmorphism {
+            background: #FFFFFF;
+            border-radius: 0;
+            border: 1px solid #000000;
+        }
+        .full-screen {
+            min-height: 100vh;
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        /* Custom scrollbar styles */
+        .scrollbar-hide::-webkit-scrollbar {
+            height: 8px;
+        }
+        .scrollbar-hide::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .scrollbar-hide::-webkit-scrollbar-thumb {
+            background: #000;
+            border-radius: 4px;
+        }
+        .scrollbar-hide::-webkit-scrollbar-thumb:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+
+    <!-- Sticky Header -->
+    <header class="sticky-header bg-white shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-2xl font-bold text-black">Iris</div>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#" class="text-black hover:text-gray-700">About</a>
+                <a href="#" class="text-black hover:text-gray-700">Programs</a>
+                <a href="#" class="text-black hover:text-gray-700">Features</a>
+                <a href="#" class="text-black hover:text-gray-700">Testimonials</a>
+                <a href="#" class="text-black hover:text-gray-700">Contact</a>
+                <a href="#" class="px-4 py-2 border border-black text-black rounded hover:bg-black hover:text-white transition">Login</a>
+                <a href="#" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Sign Up</a>
+            </div>
+            <!-- Mobile menu button -->
+            <div class="md:hidden">
+                <button class="text-gray-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="full-screen gradient-bg text-white flex items-center justify-center text-center px-6">
+        <div>
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 neon-text">Reimagining Higher Education with Technology.</h1>
+            <p class="text-xl md:text-2xl mb-8">Earn Degrees and Real-World Skills – Online, Accessible, Affordable.</p>
+            <div class="space-x-4">
+                <a href="#" class="px-6 py-3 bg-white text-black font-semibold rounded-none hover:bg-gray-200 transition">Explore Programs</a>
+                <a href="#" class="px-6 py-3 border border-white text-white font-semibold rounded-none hover:bg-white hover:text-black transition">Apply Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Iris Section -->
+    <section id="about" class="container mx-auto px-6 py-16">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="md:w-1/2 mb-8 md:mb-0">
+                <h2 class="text-3xl font-bold text-black mb-4">About Iris</h2>
+                <p class="text-black text-lg mb-6">
+                    Iris is India's first 100% digital university offering accredited degrees and skill-based programs with a focus on innovation, technology, and career-readiness.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#" class="px-6 py-3 bg-black text-white font-semibold rounded hover:bg-gray-800 transition">Register Now</a>
+                    <a href="#" class="px-6 py-3 border border-black text-black font-semibold rounded hover:bg-black hover:text-white transition">Contact Us</a>
+                </div>
+            </div>
+            <div class="md:w-1/2">
+                <div class="bg-white p-8 border border-black rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold text-black mb-4">Free Career Guidance</h3>
+                    <div class="space-y-4 mb-6">
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">🎯</span>
+                            <p class="text-black">Register for Free Career Counseling</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">🗺️</span>
+                            <p class="text-black">Get Your Personalized Career Roadmap</p>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">📅</span>
+                            <p class="text-black">Join Our Free Career Webinar</p>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-4">
+                        Next Webinar: Every Saturday at 11:00 AM IST
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Programs Offered Section -->
+    <section id="programs" class="bg-gray-100 px-6 py-16">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-black mb-12">Programs Offered</h2>
+            
+            <!-- Undergraduate Programs -->
+            <h3 class="text-2xl font-bold text-black mb-6">🎓 Undergraduate Tech Programs (UG)</h3>
+            <div class="flex overflow-x-auto space-x-6 pb-6 scrollbar-hide mb-12">
+                <!-- B.Tech CSE -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <h3 class="text-xl font-bold text-black mb-2">B.Tech in Computer Science & Engineering</h3>
+                    <p class="text-gray-600 mb-4">Duration: 4 Years</p>
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2">Specializations:</h4>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li>Artificial Intelligence & Machine Learning</li>
+                            <li>Cybersecurity & Blockchain</li>
+                            <li>Full Stack Development</li>
+                            <li>Cloud & DevOps</li>
+                            <li>Data Science & Big Data</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- B.Tech IT -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <h3 class="text-xl font-bold text-black mb-2">B.Tech in Information Technology</h3>
+                    <p class="text-gray-600 mb-4">Duration: 4 Years</p>
+                    <div class="mb-4">
+                        <p class="text-sm">Focus on software engineering, enterprise systems, UI/UX, and mobile/web development.</p>
+                    </div>
+
+                </div>
+
+                <!-- B.Tech AI & DS -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <h3 class="text-xl font-bold text-black mb-2">B.Tech in AI & Data Science</h3>
+                    <p class="text-gray-600 mb-4">Duration: 4 Years</p>
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2">Key Courses:</h4>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li>Deep Learning & Neural Networks</li>
+                            <li>Natural Language Processing</li>
+                            <li>Data Engineering Pipelines</li>
+                            <li>Ethics in AI</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- B.Tech Mechatronics -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <h3 class="text-xl font-bold text-black mb-2">B.Tech in Mechatronics & Robotics</h3>
+                    <p class="text-gray-600 mb-4">Duration: 4 Years</p>
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2">Key Courses:</h4>
+                        <ul class="list-disc list-inside text-sm space-y-1">
+                            <li>Industrial Robotics</li>
+                            <li>Embedded Systems</li>
+                            <li>Automation using AI</li>
+                            <li>IoT and Smart Devices</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+
+
+
+            <!-- Certificate Programs -->
+            <h3 class="text-2xl font-bold text-black mb-6">🌐 Short-Term Certificate Programs</h3>
+            <div class="flex overflow-x-auto space-x-6 pb-6 scrollbar-hide">
+                <!-- Python for Data Science -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-80">
+                    <h3 class="text-xl font-bold text-black mb-2">Python for Data Science</h3>
+                    <p class="text-gray-600 mb-4">Duration: 3 Months</p>
+                    <span class="inline-block bg-gray-200 text-black text-xs font-semibold px-2.5 py-0.5 mb-4">Online & On-Campus</span>
+
+                </div>
+
+                <!-- Web3 & Smart Contracts -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-80">
+                    <h3 class="text-xl font-bold text-black mb-2">Web3 & Smart Contracts</h3>
+                    <p class="text-gray-600 mb-4">Duration: 2 Months</p>
+                    <span class="inline-block bg-gray-200 text-black text-xs font-semibold px-2.5 py-0.5 mb-4">Online & On-Campus</span>
+
+                </div>
+
+                <!-- Full Stack Web Dev -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-80">
+                    <h3 class="text-xl font-bold text-black mb-2">Full Stack Web Dev Bootcamp</h3>
+                    <p class="text-gray-600 mb-4">Duration: 6 Months</p>
+                    <span class="inline-block bg-gray-200 text-black text-xs font-semibold px-2.5 py-0.5 mb-4">MERN Stack</span>
+
+                </div>
+
+                <!-- Cloud Foundations -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-80">
+                    <h3 class="text-xl font-bold text-black mb-2">Cloud Foundations</h3>
+                    <p class="text-gray-600 mb-4">Duration: 3 Months</p>
+                    <span class="inline-block bg-gray-200 text-black text-xs font-semibold px-2.5 py-0.5 mb-4">AWS/Azure</span>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Iris? (Features Section) -->
+    <section id="features" class="container mx-auto px-6 py-16">
+        <h2 class="text-3xl font-bold text-center text-black mb-12">Why Iris?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature Item Example -->
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <!-- Icon Placeholder -->
+                    <div class="w-12 h-12 bg-black flex items-center justify-center text-white text-xl">💡</div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-black mb-2">UGC-Approved Degrees</h3>
+                    <p class="text-black">Earn degrees recognized by the University Grants Commission.</p>
+                </div>
+            </div>
+             <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <!-- Icon Placeholder -->
+                    <div class="w-12 h-12 bg-black flex items-center justify-center text-white text-xl">💻</div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-black mb-2">100% Online Learning</h3>
+                    <p class="text-black">Study anytime, anywhere with our flexible online platform.</p>
+                </div>
+            </div>
+             <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <!-- Icon Placeholder -->
+                    <div class="w-12 h-12 bg-black flex items-center justify-center text-white text-xl">📚</div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-black mb-2">Career-Focused Curriculum</h3>
+                    <p class="text-black">Gain practical skills aligned with industry demands.</p>
+                </div>
+            </div>
+             <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <!-- Icon Placeholder -->
+                    <div class="w-12 h-12 bg-black flex items-center justify-center text-white text-xl">💰</div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-black mb-2">Affordable Fees</h3>
+                    <p class="text-black">High-quality education at a fraction of the cost.</p>
+                </div>
+            </div>
+             <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <!-- Icon Placeholder -->
+                    <div class="w-12 h-12 bg-black flex items-center justify-center text-white text-xl">👨‍🏫</div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-black mb-2">Learn from Industry Leaders</h3>
+                    <p class="text-black">Get insights and guidance from experienced professionals.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials / Success Stories Section -->
+    <section id="testimonials" class="bg-gray-100 px-6 py-16">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-black mb-12">Success Stories</h2>
+            <div class="flex overflow-x-auto space-x-6 pb-6 scrollbar-hide">
+                <!-- Ananya Rao - Atlassian -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <div class="text-4xl mb-4">🧑‍💻</div>
+                    <h3 class="text-xl font-bold text-black mb-2">Ananya Rao</h3>
+                    <p class="text-gray-600 mb-4">Software Developer at Atlassian</p>
+                    <p class="text-black mb-4">"Iris's project-based curriculum pushed me to go beyond theory. By the time I graduated, I had built three full-stack apps and led a hackathon-winning team. That experience helped me crack Atlassian's technical rounds with confidence."</p>
+                    <p class="text-gray-600 italic">B.Tech Computer Science, Batch of 2023</p>
+                </div>
+
+                <!-- Karthik Sharma - MIT -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <div class="text-4xl mb-4">🧬</div>
+                    <h3 class="text-xl font-bold text-black mb-2">Karthik Sharma</h3>
+                    <p class="text-gray-600 mb-4">Research Assistant at MIT Media Lab</p>
+                    <p class="text-black mb-4">"During my final year at Iris, I worked on a machine learning project in the Cognitive Computing Lab. That paper was accepted at ICML and opened the door to MIT. Iris gave me the research foundation and mentorship to get there."</p>
+                    <p class="text-gray-600 italic">B.Tech AI & Data Science, Batch of 2022</p>
+                </div>
+
+                <!-- Isha Kapoor - Swiggy -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold text-black mb-2">Isha Kapoor</h3>
+                    <p class="text-gray-600 mb-4">UI/UX Designer at Swiggy</p>
+                    <p class="text-black mb-4">"From day one, Iris made us think like creators, not just students. I joined the Product Studio at Iris in my 2nd year and interned with 3 startups. Their design mentors helped me build a stunning portfolio that got me my dream job."</p>
+                    <p class="text-gray-600 italic">B.Des in Human-Centered Computing, Batch of 2023</p>
+                </div>
+
+                <!-- Arjun Verma - Deloitte -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <div class="text-4xl mb-4">🏢</div>
+                    <h3 class="text-xl font-bold text-black mb-2">Arjun Verma</h3>
+                    <p class="text-gray-600 mb-4">Business Analyst at Deloitte USI</p>
+                    <p class="text-black mb-4">"The Business Intelligence minor and Iris's strong industry case-study culture helped me master data storytelling. My final semester capstone with Infosys gave me an edge, and Deloitte came calling right after."</p>
+                    <p class="text-gray-600 italic">BBA Tech, Batch of 2022</p>
+                </div>
+
+                <!-- Fatima Noor - GreenCell -->
+                <div class="bg-white p-6 border border-black rounded-xl hover:shadow-lg transition-shadow duration-300 flex-none w-96">
+                    <div class="text-4xl mb-4">🌐</div>
+                    <h3 class="text-xl font-bold text-black mb-2">Fatima Noor</h3>
+                    <p class="text-gray-600 mb-4">Co-Founder, GreenCell Technologies</p>
+                    <p class="text-black mb-4">"Iris's startup accelerator gave me everything I needed—funding, mentorship, and a tech team. We built a sustainable battery recycling system and are now working with 12+ municipalities across India."</p>
+                    <p class="text-gray-600 italic">B.Tech Electrical & Sustainable Tech, Batch of 2022</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Student Achievements Section -->
+    <section class="bg-white px-6 py-16">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-black mb-12">Student Achievements</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Achievement Card 1 - GSoC -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-black">
+                    <div class="w-16 h-16 mx-auto bg-black text-white flex items-center justify-center rounded-full mb-4">🏆</div>
+                    <h3 class="text-black font-bold text-xl text-center mb-2">15 Students</h3>
+                    <p class="text-black text-center">Cracked Google Summer of Code</p>
+                </div>
+                <!-- Achievement Card 2 - Bitcoin SoC -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-black">
+                    <div class="w-16 h-16 mx-auto bg-black text-white flex items-center justify-center rounded-full mb-4">💻</div>
+                    <h3 class="text-black font-bold text-xl text-center mb-2">5 Students</h3>
+                    <p class="text-black text-center">Cracked Bitcoin Summer of Code</p>
+                </div>
+                <!-- Achievement Card 3 - Internship -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-black">
+                    <div class="w-16 h-16 mx-auto bg-black text-white flex items-center justify-center rounded-full mb-4">💰</div>
+                    <h3 class="text-black font-bold text-xl text-center mb-2">₹1.25 Lakh</h3>
+                    <p class="text-black text-center">Highest Monthly Stipend</p>
+                </div>
+                <!-- Achievement Card 4 - Industry Recognition -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-black">
+                    <div class="w-16 h-16 mx-auto bg-black text-white flex items-center justify-center rounded-full mb-4">🌟</div>
+                    <h3 class="text-black font-bold text-xl text-center mb-2">FAANG</h3>
+                    <p class="text-black text-center">Industry Recognition</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Student Reviews Section -->
+    <section class="bg-gray-100 px-6 py-16">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-black mb-12">What Our Students Say</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Review Card 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-black">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-black text-white flex items-center justify-center rounded-full mr-4">A</div>
+                        <div>
+                            <h3 class="text-black font-semibold">Adobe Intern</h3>
+                            <p class="text-black text-sm">Full Stack Developer</p>
+                        </div>
+                    </div>
+                    <p class="text-black">"The practical approach and industry-relevant curriculum at Iris helped me secure my dream internship at Adobe. The mentorship was invaluable."</p>
+                </div>
+                <!-- Review Card 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-black">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-black text-white flex items-center justify-center rounded-full mr-4">D</div>
+                        <div>
+                            <h3 class="text-black font-semibold">DRDO Intern</h3>
+                            <p class="text-black text-sm">Research Assistant</p>
+                        </div>
+                    </div>
+                    <p class="text-black">"Thanks to Iris's advanced courses and expert guidance, I landed a prestigious internship at DRDO. The experience has been transformative."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Early Bird Registration Section -->
+    <section class="bg-white px-6 py-16">
+        <div class="container mx-auto text-center">
+            <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border-2 border-black">
+                <h2 class="text-4xl font-bold text-black mb-6">Register for Entrance Test</h2>
+                <div class="flex items-center justify-center mb-8">
+                    <div class="w-20 h-20 bg-black text-white flex items-center justify-center rounded-full text-3xl">1%</div>
+                    <p class="text-xl text-black ml-6 text-left">Join the top 1% of students.<br>If you think you have what it takes, register now!</p>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-black text-lg">Early Bird Benefits:</p>
+                    <ul class="text-black space-y-2">
+                        <li>✓ Priority Application Processing</li>
+                        <li>✓ Exclusive Scholarship Opportunities</li>
+                        <li>✓ Free Mock Test Access</li>
+                    </ul>
+                </div>
+                <a href="#" class="inline-block mt-8 px-8 py-4 bg-black text-white text-xl font-bold rounded-xl hover:bg-gray-800 transition-colors duration-300">Apply Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="gradient-bg text-white text-center px-6 py-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-8">Your Future Begins Here – Join Iris.</h2>
+        <div class="space-x-4">
+            <a href="#" class="px-6 py-3 bg-white text-black font-semibold rounded-none hover:bg-gray-200 transition">Get Started</a>
+            <a href="#" class="px-6 py-3 border border-white text-white font-semibold rounded-none hover:bg-white hover:text-black transition">Book a Free Counseling</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white px-6 py-12">
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <h3 class="text-xl font-semibold text-white mb-4">Iris</h3>
+                <p class="text-sm">Reimagining Higher Education with Technology.</p>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold text-white mb-4">Quick Links</h3>
+                <ul>
+                    <li><a href="#about" class="hover:text-gray-300">About</a></li>
+                    <li><a href="#programs" class="hover:text-gray-300">Programs</a></li>
+                    <li><a href="#features" class="hover:text-gray-300">Features</a></li>
+                    <li><a href="#testimonials" class="hover:text-gray-300">Testimonials</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold text-white mb-4">Legal</h3>
+                <ul>
+                    <li><a href="#" class="hover:text-gray-300">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-gray-300">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold text-white mb-4">Contact</h3>
+                <p class="text-sm mb-4">Email: info@iriscollege.com</p>
+                <div class="flex space-x-4">
+                    <!-- Social Media Icons Placeholder -->
+                    <a href="#" class="hover:text-gray-300">FB</a>
+                    <a href="#" class="hover:text-gray-300">TW</a>
+                    <a href="#" class="hover:text-gray-300">LI</a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-sm mt-8">
+            &copy; 2023 Iris Digital College. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>
