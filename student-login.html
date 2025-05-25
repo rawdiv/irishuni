@@ -61,7 +61,7 @@
         // Check if already authenticated
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
             if (session) {
-                window.location.href = '/profile.html';
+                window.location.href = '/index.html';
             }
         });
 
@@ -93,8 +93,8 @@
                     throw new Error('Student profile not found. Please sign up first.');
                 }
 
-                // Redirect to profile page
-                window.location.href = '/profile.html';
+                // Redirect to index page after login
+                window.location.href = '/index.html';
             } catch (error) {
                 errorMessage.textContent = error.message;
                 errorMessage.classList.remove('hidden');

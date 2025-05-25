@@ -50,14 +50,19 @@
     <header class="sticky-header bg-white shadow-md">
         <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <div class="text-2xl font-bold text-black">Iris</div>
-            <div class="hidden md:flex items-center space-x-6">
+            <div class="hidden md:flex items-center space-x-6" id="navLinks">
                 <a href="#" class="text-black hover:text-gray-700">About</a>
                 <a href="#" class="text-black hover:text-gray-700">Programs</a>
                 <a href="#" class="text-black hover:text-gray-700">Features</a>
                 <a href="#" class="text-black hover:text-gray-700">Testimonials</a>
                 <a href="#" class="text-black hover:text-gray-700">Contact</a>
-                <a href="/student-login.html" class="px-4 py-2 border border-black text-black rounded hover:bg-black hover:text-white transition">Student Login</a>
-                <a href="/signup.html" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Sign Up</a>
+                <a href="/student-login.html" class="px-4 py-2 border border-black text-black rounded hover:bg-black hover:text-white transition" id="loginBtn">Student Login</a>
+                <a href="/signup.html" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition" id="signupBtn">Sign Up</a>
+            </div>
+            <div class="hidden md:flex items-center space-x-6" id="profileNav" style="display:none;">
+                <span id="profileName" class="text-black font-semibold"></span>
+                <a href="/profile.html" class="px-4 py-2 border border-black text-black rounded hover:bg-black hover:text-white transition">My Profile</a>
+                <button id="logoutBtn" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Logout</button>
             </div>
             <!-- Mobile menu button -->
             <div class="md:hidden">
@@ -267,8 +272,8 @@
                     <div class="w-12 h-12 bg-black flex items-center justify-center text-white text-xl">💰</div>
                 </div>
                 <div>
-                    <h3 class="text-xl font-semibold text-black mb-2">Affordable Fees</h3>
-                    <p class="text-black">High-quality education at a fraction of the cost.</p>
+                    <h3 class="text-xl font-semibold text-black mb-2">Affordable Application Fee</h3>
+                    <p class="text-black">One-time application fee of just ₹499 for lifetime access to any certificate program.</p>
                 </div>
             </div>
              <div class="flex items-start space-x-4">
@@ -473,5 +478,44 @@
         </div>
     </footer>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="config.js" type="module"></script>
+<script>
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const navLinks = document.getElementById('navLinks');
+        const profileNav = document.getElementById('profileNav');
+        const profileName = document.getElementById('profileName');
+        if (session && session.user) {
+            // Fetch profile name
+            let name = session.user.email;
+            try {
+                const { data: profile } = await supabaseClient
+                    .from('student_profiles')
+                    .select('full_name')
+                    .eq('id', session.user.id)
+                    .single();
+                if (profile && profile.full_name) {
+                    name = profile.full_name;
+                }
+            } catch {}
+            navLinks.style.display = 'none';
+            profileNav.style.display = 'flex';
+            profileName.textContent = name;
+        } else {
+            navLinks.style.display = 'flex';
+            profileNav.style.display = 'none';
+        }
+        // Logout handler
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                window.location.reload();
+            });
+        }
+    });
+</script>
 </body>
 </html>

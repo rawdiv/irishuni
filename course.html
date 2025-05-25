@@ -25,6 +25,8 @@
 
         // Course details mapping
         const courseDetails = {
+    // All courses will have a fee of ₹499
+    getFee: () => 499,
             'python-data-science': {
                 title: 'Python for Data Science',
                 duration: '3 Months',
@@ -131,7 +133,7 @@
 
                 const options = {
                 key: RAZORPAY_KEY_ID,
-                amount: 299900,
+                amount: 49900,
                 currency: 'INR',
                 name: 'Iris Digital College',
                 description: `Course Enrollment: ${courseDetails[courseName].title}`,
@@ -145,7 +147,7 @@
                                     student_id: session.user.id,
                                     course_id: courseName,
                                     payment_id: response.razorpay_payment_id,
-                                    amount_paid: 2999
+                                    amount_paid: 499
                                 }
                             ]);
 
@@ -213,8 +215,8 @@
 
             <!-- Enrollment Section -->
             <div class="text-center mt-8">
-                <p class="text-2xl font-bold mb-4">Course Fee: ₹2,999</p>
-                <p class="text-gray-600 mb-6">One-time payment for lifetime access</p>
+                <p class="text-2xl font-bold mb-4">Course Fee: ₹499</p>
+<p class="text-gray-600 mb-6">One-time application fee for lifetime access</p>
                 <button id="enrollButton" class="px-8 py-4 bg-black text-white text-xl font-bold rounded-xl hover:bg-gray-800 transition-colors duration-300">Enroll Now</button>
             </div>
         </div>
