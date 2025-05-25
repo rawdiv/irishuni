@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iris Digital College - Student Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js" type="module"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="/" class="text-2xl font-bold text-indigo-600">Iris Digital College</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="ml-4 px-4 py-2 text-sm text-red-600 hover:text-red-900">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="studentName">Loading...</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500" id="studentEmail"></p>
+                </div>
+
+                <div class="border-t border-gray-200">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">My Courses</h4>
+                        <div id="coursesList" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <!-- Courses will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Check authentication status
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = '/student-login.html';
+                return;
+            }
+            loadProfile(session.user.id);
+        });
+
+        async function loadProfile(userId) {
+            try {
+                // Get student profile
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('student_profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                // Update profile information
+                document.getElementById('studentName').textContent = profile.full_name;
+                document.getElementById('studentEmail').textContent = profile.email;
+
+                // Get purchased courses
+                const { data: courses, error: coursesError } = await supabaseClient
+                    .from('student_courses')
+                    .select(`
+                        course_id,
+                        purchased_at,
+                        courses:course_id (*)
+                    `)
+                    .eq('student_id', userId);
+
+                if (coursesError) throw coursesError;
+
+                // Display courses
+                const coursesList = document.getElementById('coursesList');
+                coursesList.innerHTML = '';
+
+                if (courses.length === 0) {
+                    coursesList.innerHTML = '<p class="text-gray-500">No courses purchased yet.</p>';
+                    return;
+                }
+
+                courses.forEach(enrollment => {
+                    const course = enrollment.courses;
+                    const courseCard = document.createElement('div');
+                    courseCard.className = 'bg-gray-50 p-4 rounded-lg shadow';
+                    courseCard.innerHTML = `
+                        <h5 class="text-lg font-medium text-gray-900">${course.name}</h5>
+                        <p class="mt-2 text-sm text-gray-500">${course.description}</p>
+                        <a href="/course-content.html?id=${course.id}" 
+                           class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                            Access Course
+                        </a>
+                    `;
+                    coursesList.appendChild(courseCard);
+                });
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>

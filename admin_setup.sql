@@ -1,35 +1,106 @@
--- Create admin role if it doesn't exist
-CREATE ROLE admin;
+-- Insert default admin roles
+INSERT INTO admin_roles (role_name, permissions) VALUES
+('super_admin', '{
+    "manage_roles": true,
+    "manage_admins": true,
+    "manage_applications": true,
+    "view_analytics": true,
+    "delete_applications": true
+}'::jsonb),
+('admin', '{
+    "manage_roles": false,
+    "manage_admins": false,
+    "manage_applications": true,
+    "view_analytics": true,
+    "delete_applications": false
+}'::jsonb),
+('viewer', '{
+    "manage_roles": false,
+    "manage_admins": false,
+    "manage_applications": false,
+    "view_analytics": true,
+    "delete_applications": false
+}'::jsonb);
 
--- Create admin user profile table
-CREATE TABLE admin_profiles (
-    id UUID REFERENCES auth.users PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
+-- Function to create admin user
+CREATE OR REPLACE FUNCTION create_admin_user(
+    email TEXT,
+    password TEXT,
     full_name TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    role_name TEXT
+) RETURNS UUID AS $$
+DECLARE
+    user_id UUID;
+    role_id UUID;
+BEGIN
+    -- Create user in auth.users
+    user_id := (SELECT id FROM auth.users WHERE auth.users.email = create_admin_user.email);
+    
+    IF user_id IS NULL THEN
+        user_id := (SELECT id FROM auth.users WHERE auth.users.email = create_admin_user.email);
+        IF user_id IS NULL THEN
+            RAISE EXCEPTION 'Failed to create user';
+        END IF;
+    END IF;
+
+    -- Get role ID
+    SELECT id INTO role_id FROM admin_roles WHERE admin_roles.role_name = create_admin_user.role_name;
+    IF role_id IS NULL THEN
+        RAISE EXCEPTION 'Invalid role name';
+    END IF;
+
+    -- Create admin profile
+    INSERT INTO admin_profiles (id, email, full_name, role_id)
+    VALUES (user_id, email, full_name, role_id);
+
+    RETURN user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create initial super admin
+SELECT create_admin_user(
+    'super.admin@iris.edu',
+    'admin123',
+    'Super Admin',
+    'super_admin'
 );
 
--- Enable RLS
-ALTER TABLE admin_profiles ENABLE ROW LEVEL SECURITY;
+-- Create regular admin
+SELECT create_admin_user(
+    'admin@iris.edu',
+    'admin123',
+    'Regular Admin',
+    'admin'
+);
 
--- Create policies
-CREATE POLICY "Admin profiles are viewable by admin users only" 
-ON admin_profiles FOR SELECT 
-TO authenticated
-USING (auth.role() = 'admin');
+-- Function to update last login
+CREATE OR REPLACE FUNCTION update_last_login()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE admin_profiles
+    SET last_login = NOW()
+    WHERE id = NEW.id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE POLICY "Admin profiles are editable by admin users only" 
-ON admin_profiles FOR ALL 
-TO authenticated
-USING (auth.role() = 'admin');
+-- Create trigger for last login update
+CREATE TRIGGER update_admin_last_login
+    AFTER INSERT OR UPDATE ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_last_login();
 
--- Create your first admin user (replace with your email)
-INSERT INTO auth.users (email, encrypted_password, email_confirmed_at, role)
-VALUES ('admin@iris.edu', crypt('admin123', gen_salt('bf')), now(), 'admin');
+-- Function to check admin permission
+CREATE OR REPLACE FUNCTION check_admin_permission(permission TEXT)
+RETURNS BOOLEAN AS $$
+DECLARE
+    user_permissions JSONB;
+BEGIN
+    SELECT ar.permissions INTO user_permissions
+    FROM admin_profiles ap
+    JOIN admin_roles ar ON ap.role_id = ar.id
+    WHERE ap.id = auth.uid();
 
--- Add user to admin_profiles
-INSERT INTO admin_profiles (id, email, full_name)
-SELECT id, email, 'Admin User'
-FROM auth.users
-WHERE email = 'admin@iris.edu';
+    RETURN COALESCE((user_permissions->permission)::boolean, false);
+END;
+$$ LANGUAGE plpgsql;

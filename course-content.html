@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Content - Iris Digital College</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js" type="module"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="/" class="text-2xl font-bold text-indigo-600">Iris Digital College</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/profile.html" class="text-gray-700 hover:text-gray-900">My Profile</a>
+                    <button id="logoutBtn" class="text-red-600 hover:text-red-900">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div id="courseContent" class="bg-white shadow overflow-hidden sm:rounded-lg p-6">
+            <div id="loadingMessage" class="text-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Loading course content...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const courseId = new URLSearchParams(window.location.search).get('id');
+
+        // Course content mapping
+        const courseContent = {
+            'python-data-science': {
+                title: 'Python for Data Science',
+                modules: [
+                    {
+                        title: 'Module 1: Python Basics',
+                        lessons: [
+                            { title: 'Introduction to Python', duration: '45 mins' },
+                            { title: 'Variables and Data Types', duration: '60 mins' },
+                            { title: 'Control Flow', duration: '75 mins' }
+                        ]
+                    },
+                    {
+                        title: 'Module 2: Data Analysis',
+                        lessons: [
+                            { title: 'Introduction to NumPy', duration: '60 mins' },
+                            { title: 'Pandas Fundamentals', duration: '90 mins' },
+                            { title: 'Data Visualization', duration: '75 mins' }
+                        ]
+                    }
+                ]
+            },
+            'web3-smart-contracts': {
+                title: 'Web3 & Smart Contracts',
+                modules: [
+                    {
+                        title: 'Module 1: Blockchain Basics',
+                        lessons: [
+                            { title: 'Introduction to Blockchain', duration: '60 mins' },
+                            { title: 'Cryptography Fundamentals', duration: '75 mins' },
+                            { title: 'Consensus Mechanisms', duration: '60 mins' }
+                        ]
+                    },
+                    {
+                        title: 'Module 2: Smart Contracts',
+                        lessons: [
+                            { title: 'Solidity Basics', duration: '90 mins' },
+                            { title: 'Contract Development', duration: '120 mins' },
+                            { title: 'Security Best Practices', duration: '75 mins' }
+                        ]
+                    }
+                ]
+            },
+            'full-stack-web-dev': {
+                title: 'Full Stack Web Development',
+                modules: [
+                    {
+                        title: 'Module 1: Frontend Development',
+                        lessons: [
+                            { title: 'HTML & CSS Fundamentals', duration: '60 mins' },
+                            { title: 'JavaScript Basics', duration: '90 mins' },
+                            { title: 'React Components', duration: '120 mins' }
+                        ]
+                    },
+                    {
+                        title: 'Module 2: Backend Development',
+                        lessons: [
+                            { title: 'Node.js Fundamentals', duration: '75 mins' },
+                            { title: 'Express.js & REST APIs', duration: '90 mins' },
+                            { title: 'Database Integration', duration: '60 mins' }
+                        ]
+                    }
+                ]
+            },
+            'cloud-foundations': {
+                title: 'Cloud Foundations',
+                modules: [
+                    {
+                        title: 'Module 1: Cloud Basics',
+                        lessons: [
+                            { title: 'Introduction to Cloud Computing', duration: '45 mins' },
+                            { title: 'Cloud Service Models', duration: '60 mins' },
+                            { title: 'Cloud Architecture', duration: '75 mins' }
+                        ]
+                    },
+                    {
+                        title: 'Module 2: AWS Services',
+                        lessons: [
+                            { title: 'EC2 & Virtual Machines', duration: '90 mins' },
+                            { title: 'S3 & Storage Solutions', duration: '60 mins' },
+                            { title: 'Lambda & Serverless', duration: '75 mins' }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        async function checkAccess() {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    window.location.href = '/student-login.html';
+                    return false;
+                }
+
+                const { data: enrollment, error } = await supabaseClient
+                    .from('student_courses')
+                    .select('*')
+                    .eq('student_id', session.user.id)
+                    .eq('course_id', courseId)
+                    .single();
+
+                if (error || !enrollment) {
+                    window.location.href = '/profile.html';
+                    return false;
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Error checking access:', error);
+                return false;
+            }
+        }
+
+        async function displayCourseContent() {
+            const hasAccess = await checkAccess();
+            if (!hasAccess) return;
+
+            const content = courseContent[courseId];
+            if (!content) {
+                document.getElementById('courseContent').innerHTML = '
+                    <div class="text-center py-12">
+                        <p class="text-red-600">Course content not found.</p>
+                    </div>
+                ';
+                return;
+            }
+
+            const contentHtml = `
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">${content.title}</h1>
+                <div class="space-y-8">
+                    ${content.modules.map(module => `
+                        <div class="border rounded-lg p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-4">${module.title}</h2>
+                            <div class="space-y-4">
+                                ${module.lessons.map(lesson => `
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                        <div class="flex items-center">
+                                            <svg class="h-5 w-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span class="text-gray-900">${lesson.title}</span>
+                                        </div>
+                                        <span class="text-gray-500">${lesson.duration}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('courseContent').innerHTML = contentHtml;
+        }
+
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            window.location.href = '/';
+        });
+
+        // Initialize page
+        displayCourseContent();
+    </script>
+</body>
+</html>

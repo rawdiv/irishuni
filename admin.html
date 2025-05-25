@@ -10,16 +10,16 @@
     <script src="config.js" type="module"></script>
 </head>
 <body class="bg-gray-100">
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+    </div>
+
     <div class="min-h-screen flex">
         <!-- Sidebar -->
         <aside class="bg-black text-white w-64 min-h-screen p-4">
             <div class="text-2xl font-bold mb-8">Admin Panel</div>
-            <nav>
-                <a href="#dashboard" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1">Dashboard</a>
-                <a href="#students" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1">Students</a>
-                <a href="#applications" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1">Applications</a>
-                <a href="#content" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1">Content Management</a>
-                <a href="#settings" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">Settings</a>
+            <nav id="adminNav">
+                <!-- Navigation items will be dynamically populated based on role -->
             </nav>
         </aside>
 
@@ -32,11 +32,13 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                         </svg>
+                        <span id="notificationCount" class="hidden absolute top-0 right-0 bg-red-500 text-white rounded-full text-xs px-2">0</span>
                     </button>
                     <div class="relative">
                         <button id="profileBtn" class="flex items-center space-x-2">
                             <img id="profileImage" src="https://ui-avatars.com/api/?name=Admin&background=000&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
                             <span id="adminName">Admin</span>
+                            <span id="adminRole" class="text-sm text-gray-500"></span>
                         </button>
                         <div id="profileMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
                             <a href="#profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
@@ -51,28 +53,28 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-gray-500 text-sm">Total Students</h3>
-                        <span class="text-green-500 text-sm" id="studentGrowth">+12%</span>
+                        <span class="text-green-500 text-sm" id="studentGrowth">Loading...</span>
                     </div>
                     <p class="text-3xl font-bold" id="totalStudents">Loading...</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-gray-500 text-sm">New Applications</h3>
-                        <span class="text-red-500 text-sm" id="applicationGrowth">-5%</span>
+                        <span class="text-red-500 text-sm" id="applicationGrowth">Loading...</span>
                     </div>
                     <p class="text-3xl font-bold" id="newApplications">Loading...</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-gray-500 text-sm">Course Enrollments</h3>
-                        <span class="text-green-500 text-sm" id="enrollmentGrowth">+8%</span>
+                        <span class="text-green-500 text-sm" id="enrollmentGrowth">Loading...</span>
                     </div>
                     <p class="text-3xl font-bold" id="courseEnrollments">Loading...</p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-gray-500 text-sm">Active Users</h3>
-                        <span class="text-green-500 text-sm" id="userGrowth">+15%</span>
+                        <span class="text-green-500 text-sm" id="userGrowth">Loading...</span>
                     </div>
                     <p class="text-3xl font-bold" id="activeUsers">Loading...</p>
                 </div>
@@ -119,232 +121,253 @@
 
     <script>
         // Initialize Supabase client
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let userRole = null;
+        let userPermissions = null;
 
-        // Check authentication status and redirect if not authenticated
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-                window.location.href = '/login.html'
-            }
-        })
+        // Navigation items based on roles
+        const navItems = {
+            super_admin: [
+                { href: '#dashboard', text: 'Dashboard' },
+                { href: '#admins', text: 'Manage Admins' },
+                { href: '#roles', text: 'Manage Roles' },
+                { href: '#applications', text: 'Applications' },
+                { href: '#settings', text: 'Settings' }
+            ],
+            admin: [
+                { href: '#dashboard', text: 'Dashboard' },
+                { href: '#applications', text: 'Applications' },
+                { href: '#settings', text: 'Settings' }
+            ],
+            viewer: [
+                { href: '#dashboard', text: 'Dashboard' },
+                { href: '#applications', text: 'View Applications' }
+            ]
+        };
 
-        // Listen for auth state changes
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT' || !session) {
-                window.location.href = '/login.html'
-            }
-        })
-
-        // Profile menu toggle
-        const profileBtn = document.getElementById('profileBtn')
-        const profileMenu = document.getElementById('profileMenu')
-        profileBtn.addEventListener('click', () => {
-            profileMenu.classList.toggle('hidden')
-        })
-
-        // Logout handler
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
+        // Check authentication and load admin profile
+        async function initializeAdmin() {
             try {
-                const { error } = await supabaseClient.auth.signOut()
-                if (error) throw error
-                window.location.href = '/login.html'
-            } catch (error) {
-                console.error('Error logging out:', error)
-                alert('Error logging out. Please try again.')
-            }
-        })
+                const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                if (sessionError) throw sessionError;
 
-        // Load admin profile
-        async function loadAdminProfile() {
+                if (!session) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('admin_profiles')
+                    .select('*, admin_roles(role_name, permissions)')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                if (!profile || !profile.active) {
+                    await supabaseClient.auth.signOut();
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                userRole = profile.admin_roles.role_name;
+                userPermissions = profile.admin_roles.permissions;
+
+                // Update UI
+                document.getElementById('adminName').textContent = profile.full_name;
+                document.getElementById('adminRole').textContent = userRole;
+                document.getElementById('profileImage').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=000&color=fff`;
+
+                // Setup navigation
+                setupNavigation();
+
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').classList.add('hidden');
+
+                // Load dashboard data
+                await loadDashboardData();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('Error initializing admin panel. Please try refreshing the page.');
+            }
+        }
+
+        // Setup navigation based on role
+        function setupNavigation() {
+            const nav = document.getElementById('adminNav');
+            nav.innerHTML = '';
+
+            const items = navItems[userRole] || [];
+            items.forEach(item => {
+                const link = document.createElement('a');
+                link.href = item.href;
+                link.className = 'block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1';
+                link.textContent = item.text;
+                nav.appendChild(link);
+            });
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
             try {
-                const { data: { user } } = await supabaseClient.auth.getUser()
-                if (user) {
-                    const { data: profile, error } = await supabaseClient
-                        .from('admin_profiles')
-                        .select('*')
-                        .eq('id', user.id)
-                        .single()
+                // Load statistics
+                const stats = await Promise.all([
+                    supabaseClient.from('applications').select('id', { count: 'exact', head: true }),
+                    supabaseClient.from('applications').select('status')
+                ]);
 
-                    if (error) throw error
+                const [totalApps, statusData] = stats;
 
-                    if (profile) {
-                        document.getElementById('adminName').textContent = profile.name || 'Admin'
-                        document.getElementById('profileImage').src = profile.avatar_url || `https://ui-avatars.com/api/?name=${profile.name || 'Admin'}&background=000&color=fff`
-                    }
-                }
+                // Update statistics
+                document.getElementById('newApplications').textContent = totalApps.count || 0;
+                
+                // Process application status data for chart
+                const statusCounts = statusData.data.reduce((acc, curr) => {
+                    acc[curr.status] = (acc[curr.status] || 0) + 1;
+                    return acc;
+                }, {});
+
+                // Update application chart
+                updateApplicationChart(statusCounts);
+
+                // Load recent applications
+                await loadRecentApplications();
             } catch (error) {
-                console.error('Error loading profile:', error)
-                alert('Error loading admin profile. Please try refreshing the page.')
+                console.error('Error loading dashboard data:', error);
+                alert('Error loading dashboard data. Please try refreshing the page.');
             }
         }
 
-        // Initialize charts
-        let enrollmentChart, applicationChart
-
-        async function initializeCharts() {
-            // Enrollment trends chart
-            const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d')
-            const { data: enrollments, error: enrollmentsError } = await supabaseClient
-                .from('enrollments')
-                .select('created_at')
-                .order('created_at', { ascending: true })
-
-            if (enrollmentsError) throw enrollmentsError
-
-            const enrollmentData = processEnrollmentData(enrollments)
-            enrollmentChart = new Chart(enrollmentCtx, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(enrollmentData),
-                    datasets: [{
-                        label: 'Enrollments',
-                        data: Object.values(enrollmentData),
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
-                    }]
-                }
-            })
-
-            // Application status chart
-            const applicationCtx = document.getElementById('applicationChart').getContext('2d')
-            const { data: applications, error: applicationsError } = await supabaseClient
-                .from('applications')
-                .select('status')
-
-            if (applicationsError) throw applicationsError
-
-            const applicationData = processApplicationData(applications)
-            applicationChart = new Chart(applicationCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(applicationData),
-                    datasets: [{
-                        data: Object.values(applicationData),
-                        backgroundColor: ['#FCD34D', '#34D399', '#F87171']
-                    }]
-                }
-            })
-        }
-
-        // Process data for charts
-        function processEnrollmentData(enrollments) {
-            const data = {}
-            enrollments.forEach(enrollment => {
-                const month = new Date(enrollment.created_at).toLocaleString('default', { month: 'short' })
-                data[month] = (data[month] || 0) + 1
-            })
-            return data
-        }
-
-        function processApplicationData(applications) {
-            const data = {
-                'Pending': 0,
-                'Approved': 0,
-                'Rejected': 0
-            }
-            applications.forEach(app => {
-                data[app.status.charAt(0).toUpperCase() + app.status.slice(1)]++
-            })
-            return data
-        }
-
-        // Update dashboard stats
-        async function updateStats() {
-            try {
-                const [students, applications, enrollments, activeUsers] = await Promise.all([
-                    supabaseClient.from('students').select('*', { count: 'exact', head: true }),
-                    supabaseClient.from('applications').select('*', { count: 'exact', head: true }),
-                    supabaseClient.from('enrollments').select('*', { count: 'exact', head: true }),
-                    supabaseClient.from('students').select('*', { count: 'exact', head: true }).eq('status', 'active')
-                ])
-
-                if (students.error) throw students.error
-                if (applications.error) throw applications.error
-                if (enrollments.error) throw enrollments.error
-                if (activeUsers.error) throw activeUsers.error
-
-                document.getElementById('totalStudents').textContent = students.count || 0
-                document.getElementById('newApplications').textContent = applications.count || 0
-                document.getElementById('courseEnrollments').textContent = enrollments.count || 0
-                document.getElementById('activeUsers').textContent = activeUsers.count || 0
-            } catch (error) {
-                console.error('Error updating stats:', error)
-                const elements = ['totalStudents', 'newApplications', 'courseEnrollments', 'activeUsers']
-                elements.forEach(id => document.getElementById(id).textContent = 'Error')
-                alert('Error loading dashboard statistics. Please try refreshing the page.')
-            }
-        }
-
-        // Update applications table
-        async function updateApplicationsTable() {
+        // Load recent applications
+        async function loadRecentApplications() {
             try {
                 const { data: applications, error } = await supabaseClient
                     .from('applications')
                     .select('*')
                     .order('created_at', { ascending: false })
-                    .limit(10)
+                    .limit(10);
 
-                if (error) throw error
+                if (error) throw error;
 
-                const tableBody = document.getElementById('applicationsTable')
-                tableBody.innerHTML = applications.map(app => `
-                    <tr>
+                const tableBody = document.getElementById('applicationsTable');
+                tableBody.innerHTML = '';
+
+                applications.forEach(app => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">${app.student_name}</div>
-                                    <div class="text-sm text-gray-500">${app.email}</div>
-                                </div>
-                            </div>
+                            <div class="text-sm font-medium text-gray-900">${app.full_name}</div>
+                            <div class="text-sm text-gray-500">${app.email}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.program}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.program_type} - ${app.course}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${app.status === 'approved' ? 'green' : app.status === 'rejected' ? 'red' : 'yellow'}-100 text-${app.status === 'approved' ? 'green' : app.status === 'rejected' ? 'red' : 'yellow'}-800">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${getStatusColor(app.status)}-100 text-${getStatusColor(app.status)}-800">
                                 ${app.status}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(app.created_at).toLocaleDateString()}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="viewApplication('${app.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">View</button>
-                            <button onclick="deleteApplication('${app.id}')" class="text-red-600 hover:text-red-900">Delete</button>
+                            <button onclick="viewApplication('${app.id}')" class="text-indigo-600 hover:text-indigo-900 mr-2">View</button>
+                            ${userRole === 'super_admin' ? `<button onclick="deleteApplication('${app.id}')" class="text-red-600 hover:text-red-900">Delete</button>` : ''}
                         </td>
-                    </tr>
-                `).join('')
+                    `;
+                    tableBody.appendChild(row);
+                });
             } catch (error) {
-                console.error('Error updating applications table:', error)
+                console.error('Error loading applications:', error);
+                alert('Error loading applications. Please try refreshing the page.');
             }
         }
 
-        // Application actions
-        async function viewApplication(id) {
-            // Implement view application logic
-            console.log('Viewing application:', id)
+        // Update application chart
+        function updateApplicationChart(statusCounts) {
+            const ctx = document.getElementById('applicationChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: [
+                            '#10B981', // Approved
+                            '#EF4444', // Rejected
+                            '#F59E0B', // Pending
+                            '#6B7280'  // Others
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
         }
 
+        // Helper function for status colors
+        function getStatusColor(status) {
+            const colors = {
+                'approved': 'green',
+                'rejected': 'red',
+                'pending': 'yellow'
+            };
+            return colors[status] || 'gray';
+        }
+
+        // View application details
+        function viewApplication(id) {
+            window.location.href = `/application-details.html?id=${id}`;
+        }
+
+        // Delete application (super admin only)
         async function deleteApplication(id) {
+            if (!confirm('Are you sure you want to delete this application?')) return;
+
             try {
                 const { error } = await supabaseClient
                     .from('applications')
                     .delete()
-                    .eq('id', id)
+                    .eq('id', id);
 
-                if (error) throw error
-                updateApplicationsTable()
-                updateStats()
+                if (error) throw error;
+
+                await loadRecentApplications();
+                alert('Application deleted successfully.');
             } catch (error) {
-                console.error('Error deleting application:', error)
+                console.error('Error deleting application:', error);
+                alert('Error deleting application. Please try again.');
             }
         }
 
-        // Initialize dashboard
-        loadAdminProfile()
-        initializeCharts()
-        updateStats()
-        updateApplicationsTable()
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+                alert('Error logging out. Please try again.');
+            }
+        });
 
-        // Refresh data periodically
-        setInterval(updateStats, 30000)
-        setInterval(updateApplicationsTable, 30000)
+        // Profile menu toggle
+        document.getElementById('profileBtn').addEventListener('click', () => {
+            document.getElementById('profileMenu').classList.toggle('hidden');
+        });
+
+        // Initialize admin panel
+        initializeAdmin();
+
+        // Listen for auth state changes
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || !session) {
+                window.location.href = '/login.html';
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Details - Iris Digital College</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script type="module">
+        import { RAZORPAY_KEY_ID, SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Get course name from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseName = urlParams.get('course');
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePage();
+        });
+
+        async function initializePage() {
+
+        // Course details mapping
+        const courseDetails = {
+            'python-data-science': {
+                title: 'Python for Data Science',
+                duration: '3 Months',
+                description: 'Master Python programming for data analysis, visualization, and machine learning. Build real-world projects and get hands-on experience with popular data science libraries.',
+                highlights: [
+                    'Fundamentals of Python Programming',
+                    'Data Analysis with Pandas & NumPy',
+                    'Data Visualization with Matplotlib & Seaborn',
+                    'Introduction to Machine Learning with Scikit-learn',
+                    'Real-world Project Portfolio'
+                ]
+            },
+            'web3-smart-contracts': {
+                title: 'Web3 & Smart Contracts',
+                duration: '2 Months',
+                description: 'Learn blockchain technology, Ethereum development, and smart contract programming. Build decentralized applications and understand the future of web technology.',
+                highlights: [
+                    'Blockchain Fundamentals',
+                    'Ethereum Development',
+                    'Solidity Programming',
+                    'Smart Contract Security',
+                    'DApp Development'
+                ]
+            },
+            'full-stack-web-dev': {
+                title: 'Full Stack Web Dev Bootcamp',
+                duration: '6 Months',
+                description: 'Become a complete web developer with our comprehensive bootcamp. Learn front-end, back-end, databases, and deployment using the MERN stack.',
+                highlights: [
+                    'HTML, CSS, JavaScript',
+                    'React.js Development',
+                    'Node.js & Express.js',
+                    'MongoDB Database',
+                    'Full Stack Projects'
+                ]
+            },
+            'cloud-foundations': {
+                title: 'Cloud Foundations',
+                duration: '3 Months',
+                description: 'Get started with cloud computing using AWS and Azure. Learn cloud architecture, services, and best practices for modern applications.',
+                highlights: [
+                    'Cloud Computing Basics',
+                    'AWS Core Services',
+                    'Azure Fundamentals',
+                    'Cloud Security',
+                    'Cloud Projects'
+                ]
+            }
+        };
+
+        function displayCourseDetails() {
+            const course = courseDetails[courseName];
+            if (!course) {
+                window.location.href = '/';
+                return;
+            }
+
+            const detailsHtml = `
+                <h1 class="text-3xl font-bold text-black mb-4">${course.title}</h1>
+                <p class="text-gray-600 mb-4">Duration: ${course.duration}</p>
+                <p class="text-black mb-6">${course.description}</p>
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-black mb-4">Course Highlights:</h2>
+                    <ul class="list-disc list-inside space-y-2">
+                        ${course.highlights.map(highlight => `<li class="text-black">${highlight}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+
+            document.getElementById('courseDetails').innerHTML = detailsHtml;
+        }
+
+        async function initializePayment(event) {
+            event.preventDefault();
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (!session) {
+                window.location.href = '/signup.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+
+            // Get user profile
+            const { data: profile } = await supabaseClient
+                .from('student_profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+            try {
+                if (!profile) {
+                    console.error('User profile not found');
+                    alert('Please complete your profile before enrolling');
+                    window.location.href = '/profile.html';
+                    return;
+                }
+
+                const course = courseDetails[courseName];
+                if (!course) {
+                    console.error('Course not found');
+                    alert('Invalid course selection');
+                    window.location.href = '/';
+                    return;
+                }
+
+                const options = {
+                key: RAZORPAY_KEY_ID,
+                amount: 299900,
+                currency: 'INR',
+                name: 'Iris Digital College',
+                description: `Course Enrollment: ${courseDetails[courseName].title}`,
+                handler: async function(response) {
+                    try {
+                        // Record the purchase
+                        await supabaseClient
+                            .from('student_courses')
+                            .insert([
+                                {
+                                    student_id: session.user.id,
+                                    course_id: courseName,
+                                    payment_id: response.razorpay_payment_id,
+                                    amount_paid: 2999
+                                }
+                            ]);
+
+                        window.location.href = '/profile.html';
+                    } catch (error) {
+                        console.error('Error recording purchase:', error);
+                        alert('Payment successful but there was an error recording your purchase. Please contact support.');
+                    }
+                },
+                prefill: {
+                    name: profile.full_name,
+                    email: profile.email,
+                    contact: profile.phone || ''
+                },
+                theme: {
+                    color: '#000000'
+                }
+            };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response){
+                    alert('Payment failed. Please try again.');
+                    console.error('Payment failed:', response.error);
+                });
+                rzp.open();
+            } catch (error) {
+                console.error('Error initializing payment:', error);
+                alert('Unable to initialize payment. Please try again later.');
+            }
+        }
+
+            try {
+                displayCourseDetails();
+                const enrollButton = document.getElementById('enrollButton');
+                if (enrollButton) {
+                    enrollButton.addEventListener('click', initializePayment);
+                } else {
+                    console.error('Enroll button not found');
+                }
+            } catch (error) {
+                console.error('Error initializing page:', error);
+            }
+        }
+    </script>
+</head>
+<body class="bg-white text-gray-800">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-black">Iris</a>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="/" class="text-black hover:text-gray-700">Home</a>
+                <a href="/#programs" class="text-black hover:text-gray-700">Programs</a>
+                <a href="/application.html" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition">Apply Now</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Course Details Section -->
+    <main class="container mx-auto px-6 py-12">
+        <div class="max-w-4xl mx-auto">
+            <div id="courseDetails" class="bg-white p-8 rounded-xl shadow-lg border-2 border-black mb-8">
+                <!-- Course details will be populated by JavaScript -->
+            </div>
+
+            <!-- Enrollment Section -->
+            <div class="text-center mt-8">
+                <p class="text-2xl font-bold mb-4">Course Fee: ₹2,999</p>
+                <p class="text-gray-600 mb-6">One-time payment for lifetime access</p>
+                <button id="enrollButton" class="px-8 py-4 bg-black text-white text-xl font-bold rounded-xl hover:bg-gray-800 transition-colors duration-300">Enroll Now</button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

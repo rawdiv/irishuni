@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iris Digital College - Admin Login</title>
+    <title>Iris Digital College - Student Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="config.js" type="module"></script>
@@ -11,8 +11,8 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
     <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-gray-900">Admin Login</h2>
-            <p class="mt-2 text-sm text-gray-600">Sign in to access the admin dashboard</p>
+            <h2 class="text-3xl font-bold text-gray-900">Student Login</h2>
+            <p class="mt-2 text-sm text-gray-600">Sign in to access your courses</p>
         </div>
 
         <form id="loginForm" class="space-y-6">
@@ -46,19 +46,22 @@
                     Sign in
                 </button>
             </div>
+
+            <div class="text-center text-sm">
+                <p>Don't have an account? <a href="signup.html" class="text-indigo-600 hover:text-indigo-500">Sign up</a></p>
+            </div>
         </form>
 
         <div id="errorMessage" class="mt-4 text-center text-sm text-red-600 hidden"></div>
     </div>
 
     <script>
-        // Initialize Supabase client
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Check if already authenticated
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
             if (session) {
-                window.location.href = '/admin.html';
+                window.location.href = '/profile.html';
             }
         });
 
@@ -78,53 +81,23 @@
 
                 if (signInError) throw signInError;
 
-                // Check if user is an admin
-                const { data: adminProfile, error: profileError } = await supabaseClient
-                    .from('admin_profiles')
-                    .select('active, admin_roles(role_name)')
+                // Check if user has a student profile
+                const { data: studentProfile, error: profileError } = await supabaseClient
+                    .from('student_profiles')
+                    .select('*')
                     .eq('id', session.user.id)
                     .single();
 
-                if (profileError) throw profileError;
-
-                if (!adminProfile || !adminProfile.active) {
+                if (profileError || !studentProfile) {
                     await supabaseClient.auth.signOut();
-                    throw new Error('Unauthorized access. Please contact the administrator.');
+                    throw new Error('Student profile not found. Please sign up first.');
                 }
 
-                // Update last login timestamp
-                await supabaseClient.rpc('update_last_login', {
-                    user_id: session.user.id
-                });
-
-                // Redirect to admin dashboard
-                window.location.href = '/admin.html';
+                // Redirect to profile page
+                window.location.href = '/profile.html';
             } catch (error) {
-                console.error('Login error:', error);
-                errorMessage.textContent = error.message || 'An error occurred during login. Please try again.';
+                errorMessage.textContent = error.message;
                 errorMessage.classList.remove('hidden');
-            }
-        });
-
-        // Handle "Remember me" checkbox
-        const rememberCheckbox = document.getElementById('remember');
-        rememberCheckbox.checked = localStorage.getItem('rememberAdmin') === 'true';
-        rememberCheckbox.addEventListener('change', (e) => {
-            localStorage.setItem('rememberAdmin', e.target.checked);
-        });
-
-        // Pre-fill email if remembered
-        if (localStorage.getItem('rememberAdmin') === 'true') {
-            const savedEmail = localStorage.getItem('adminEmail');
-            if (savedEmail) {
-                document.getElementById('email').value = savedEmail;
-            }
-        }
-
-        // Save email when "Remember me" is checked
-        document.getElementById('email').addEventListener('input', (e) => {
-            if (rememberCheckbox.checked) {
-                localStorage.setItem('adminEmail', e.target.value);
             }
         });
     </script>

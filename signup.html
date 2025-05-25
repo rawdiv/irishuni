@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iris Digital College - Student Signup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js" type="module"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Create Student Account</h2>
+            <p class="mt-2 text-sm text-gray-600">Sign up to enroll in courses</p>
+        </div>
+
+        <form id="signupForm" class="space-y-6">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" id="name" name="name" required
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                <input type="email" id="email" name="email" required
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" required
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div>
+                <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Sign up
+                </button>
+            </div>
+
+            <div class="text-center text-sm">
+                <p>Already have an account? <a href="student-login.html" class="text-indigo-600 hover:text-indigo-500">Sign in</a></p>
+            </div>
+        </form>
+
+        <div id="errorMessage" class="mt-4 text-center text-sm text-red-600 hidden"></div>
+    </div>
+
+    <script>
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorMessage = document.getElementById('errorMessage');
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // Sign up with email and password
+                const { data: { user }, error: signUpError } = await supabaseClient.auth.signUp({
+                    email,
+                    password
+                });
+
+                if (signUpError) throw signUpError;
+
+                // Create student profile
+                const { error: profileError } = await supabaseClient
+                    .from('student_profiles')
+                    .insert([
+                        {
+                            id: user.id,
+                            full_name: name,
+                            email: email
+                        }
+                    ]);
+
+                if (profileError) throw profileError;
+
+                // Redirect to profile page
+                window.location.href = '/profile.html';
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                errorMessage.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
