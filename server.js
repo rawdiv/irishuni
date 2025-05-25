@@ -16,7 +16,52 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+
+// Authentication middleware for admin routes
+const authenticateAdmin = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ error: 'No authorization header' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
+
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (error) throw error;
+
+        const { data: adminProfile } = await supabase
+            .from('admin_profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (!adminProfile) {
+            return res.status(403).json({ error: 'Not authorized as admin' });
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+};
+
+// Serve static files except admin.html
+app.use(express.static(path.join(__dirname), {
+    index: 'index.html',
+    setHeaders: (res, path) => {
+        if (path.endsWith('admin.html')) {
+            res.status(403).end();
+        }
+    }
+}));
+
+// Protect admin routes
+app.use('/api/admin/*', authenticateAdmin);
 
 // Configure multer for file uploads
 const upload = multer({
@@ -80,7 +125,7 @@ app.post('/api/applications', upload.single('photo'), async (req, res) => {
 });
 
 // Get all applications (admin only)
-app.get('/api/applications', async (req, res) => {
+app.get('/api/admin/applications', authenticateAdmin, async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('applications')

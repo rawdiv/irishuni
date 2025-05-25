@@ -1,91 +1,66 @@
-# Iris Institute of Technology - Application System
+# Iris Digital College Application System
 
-## Overview
-This is the application management system for Iris Institute of Technology, featuring a student application form, admin dashboard, and Supabase backend integration.
+A web application for managing student applications and admin dashboard for Iris Digital College.
 
 ## Features
-- Student Application Form
-- Admin Dashboard
-- Supabase Database Integration
-- File Upload Support
-- Real-time Updates
+
+- Student application form with file upload
+- Secure admin dashboard
+- Role-based access control
+- Docker containerization
 
 ## Prerequisites
-- Node.js (v14 or higher)
-- npm (v6 or higher)
-- Supabase Account
 
-## Setup Instructions
+- Node.js 18 or higher
+- Docker and Docker Compose
+- Supabase account
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+## Environment Variables
 
-2. **Configure Environment Variables**
-   Create a `.env` file in the root directory with the following variables:
-   ```env
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-   PORT=3000
-   ```
+Create a `.env` file in the root directory with:
 
-3. **Initialize Database**
-   - Create a new Supabase project
-   - Run the SQL commands from `schema.sql` in the Supabase SQL editor
-   - Create a storage bucket named 'applicant-photos'
-
-4. **Start the Server**
-   ```bash
-   # Development mode
-   npm run dev
-
-   # Production mode
-   npm start
-   ```
-
-## API Endpoints
-
-### Applications
-
-#### Submit Application
-- **POST** `/api/applications`
-- Multipart form data for application details and photo
-
-#### Get All Applications (Admin)
-- **GET** `/api/applications`
-- Requires admin authentication
-
-#### Update Application Status (Admin)
-- **PATCH** `/api/applications/:id`
-- Requires admin authentication
-- Body: `{ "status": "approved" | "rejected" | "pending" }`
-
-#### Delete Application (Admin)
-- **DELETE** `/api/applications/:id`
-- Requires admin authentication
-
-## File Structure
+```env
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
-├── .env                 # Environment variables
-├── package.json         # Project dependencies
-├── server.js           # Express server setup
-├── schema.sql          # Database schema
-├── README.md           # Project documentation
-├── admin.html          # Admin dashboard
-├── application.html    # Application form
-└── config.js           # Supabase configuration
+
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
 ```
+
+## Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+```
+
+## Render Deployment
+
+1. Create a new Web Service in Render
+2. Connect your GitHub repository
+3. Set environment variables in Render dashboard
+4. Use the following build command:
+   ```bash
+   docker build -t iris-college .
+   ```
+5. Use the following start command:
+   ```bash
+   docker run -p 3000:3000 iris-college
+   ```
 
 ## Security
-- Row Level Security (RLS) enabled
-- Admin-only access to sensitive operations
-- File upload size limits
-- CORS protection
 
-## Contributing
-Please follow the existing code style and add unit tests for any new features.
+- Admin panel is protected with authentication
+- Static admin files are not publicly accessible
+- All API routes are secured with proper authorization
 
 ## License
-MIT
+
+ISC
