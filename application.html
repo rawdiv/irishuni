@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Form - Iris Institute of Technology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js" type="module"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white shadow-lg rounded-lg p-8">
+            <h1 class="text-3xl font-bold text-center mb-8 text-blue-600">Iris Institute of Technology</h1>
+            <h2 class="text-2xl font-semibold mb-6 text-center">Application Form</h2>
+
+            <form id="applicationForm" class="space-y-8">
+                <!-- Section 1: Personal Information -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Personal Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" name="fullName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                            <input type="date" name="dob" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Gender</label>
+                            <select name="gender" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                                <option value="prefer_not_to_say">Prefer not to say</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Nationality</label>
+                            <input type="text" name="nationality" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Category</label>
+                            <select name="category" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Category</option>
+                                <option value="general">General</option>
+                                <option value="obc">OBC</option>
+                                <option value="sc">SC</option>
+                                <option value="st">ST</option>
+                                <option value="ews">EWS</option>
+                                <option value="others">Others</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Passport-size Photo</label>
+                            <input type="file" name="photo" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Contact Information -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Contact Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                            <input type="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
+                            <input type="tel" name="mobile" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Alternate Contact Number</label>
+                            <input type="tel" name="alternateMobile" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Academic Details -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Academic Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Latest Qualification</label>
+                            <select name="qualification" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Qualification</option>
+                                <option value="10th">10th</option>
+                                <option value="12th">12th</option>
+                                <option value="diploma">Diploma</option>
+                                <option value="ug">UG</option>
+                                <option value="pg">PG</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">School/College Name</label>
+                            <input type="text" name="institution" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Board/University Name</label>
+                            <input type="text" name="board" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Year of Passing</label>
+                            <input type="number" name="passingYear" required min="1900" max="2099" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Percentage or CGPA</label>
+                            <input type="number" name="percentage" required step="0.01" min="0" max="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Course Selection -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Course Selection</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Program Type</label>
+                            <select name="programType" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Program Type</option>
+                                <option value="ug">UG</option>
+                                <option value="pg">PG</option>
+                                <option value="certificate">Certificate</option>
+                                <option value="online">Online</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Course / Program Applied For</label>
+                            <select name="course" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Course</option>
+                                <option value="btech">B.Tech</option>
+                                <option value="mtech">M.Tech</option>
+                                <option value="bca">BCA</option>
+                                <option value="mca">MCA</option>
+                                <option value="bba">BBA</option>
+                                <option value="mba">MBA</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Specialization</label>
+                            <input type="text" name="specialization" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Preferred Batch</label>
+                            <input type="number" name="batch" required min="2024" max="2030" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Mode of Study</label>
+                            <select name="studyMode" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Mode</option>
+                                <option value="on-campus">On-Campus</option>
+                                <option value="hybrid">Hybrid</option>
+                                <option value="online">Online</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Additional Details -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Additional Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Are you applying for a scholarship?</label>
+                            <select name="scholarship" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">How did you hear about us?</label>
+                            <select name="referralSource" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Select Source</option>
+                                <option value="social_media">Social Media</option>
+                                <option value="website">Website</option>
+                                <option value="referral">Referral</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Referral Code</label>
+                            <input type="text" name="referralCode" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">LinkedIn / GitHub / Portfolio Link</label>
+                            <input type="url" name="portfolioLink" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 6: Declaration -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Declaration</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <input type="checkbox" name="declaration" required class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label class="ml-2 block text-sm text-gray-700">I confirm that all details provided are true and correct.</label>
+                        </div>
+                        <div class="flex items-start">
+                            <input type="checkbox" name="terms" required class="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label class="ml-2 block text-sm text-gray-700">I agree to the Terms & Conditions.</label>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Typed Signature (Full Name)</label>
+                            <input type="text" name="signature" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center">
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        import { supabase } from './config.js';
+
+        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            // Convert FormData to object
+            const applicationData = {};
+            for (let [key, value] of formData.entries()) {
+                applicationData[key] = value;
+            }
+
+            try {
+                // Handle photo upload if provided
+                const photoFile = formData.get('photo');
+                let photoUrl = null;
+
+                if (photoFile.size > 0) {
+                    const { data, error } = await supabase.storage
+                        .from('applicant-photos')
+                        .upload(`${Date.now()}-${photoFile.name}`, photoFile);
+
+                    if (error) throw error;
+                    photoUrl = data.path;
+                }
+
+                // Save application data
+                const { data, error } = await supabase
+                    .from('applications')
+                    .insert([
+                        {
+                            ...applicationData,
+                            photo_url: photoUrl,
+                            status: 'pending',
+                            created_at: new Date().toISOString()
+                        }
+                    ]);
+
+                if (error) throw error;
+
+                alert('Application submitted successfully!');
+                form.reset();
+                window.location.href = '/thank-you.html';
+
+            } catch (error) {
+                console.error('Error submitting application:', error);
+                alert('Error submitting application. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

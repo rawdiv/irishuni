@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iris Digital College - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="config.js" type="module"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <aside class="bg-black text-white w-64 min-h-screen p-4">
+            <div class="text-2xl font-bold mb-8">Admin Panel</div>
+            <nav>
+                <a href="#dashboard" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1">Dashboard</a>
+                <a href="#students" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1">Students</a>
+                <a href="#applications" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1">Applications</a>
+                <a href="#content" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 mb-1">Content Management</a>
+                <a href="#settings" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">Settings</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-2xl font-bold">Dashboard Overview</h1>
+                <div class="flex items-center space-x-4">
+                    <button id="notificationBtn" class="p-2 rounded-full hover:bg-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                    </button>
+                    <div class="relative">
+                        <button id="profileBtn" class="flex items-center space-x-2">
+                            <img id="profileImage" src="https://ui-avatars.com/api/?name=Admin&background=000&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
+                            <span id="adminName">Admin</span>
+                        </button>
+                        <div id="profileMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                            <a href="#profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                            <button id="logoutBtn" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-gray-500 text-sm">Total Students</h3>
+                        <span class="text-green-500 text-sm" id="studentGrowth">+12%</span>
+                    </div>
+                    <p class="text-3xl font-bold" id="totalStudents">Loading...</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-gray-500 text-sm">New Applications</h3>
+                        <span class="text-red-500 text-sm" id="applicationGrowth">-5%</span>
+                    </div>
+                    <p class="text-3xl font-bold" id="newApplications">Loading...</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-gray-500 text-sm">Course Enrollments</h3>
+                        <span class="text-green-500 text-sm" id="enrollmentGrowth">+8%</span>
+                    </div>
+                    <p class="text-3xl font-bold" id="courseEnrollments">Loading...</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-gray-500 text-sm">Active Users</h3>
+                        <span class="text-green-500 text-sm" id="userGrowth">+15%</span>
+                    </div>
+                    <p class="text-3xl font-bold" id="activeUsers">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">Enrollment Trends</h3>
+                    <canvas id="enrollmentChart"></canvas>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4">Application Status</h3>
+                    <canvas id="applicationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Applications Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold mb-4">Recent Applications</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="applicationsTable">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center">Loading applications...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Check authentication status
+        const supabaseUrl = localStorage.getItem('SUPABASE_URL')
+        const supabaseAnonKey = localStorage.getItem('SUPABASE_ANON_KEY')
+        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey)
+
+        // Redirect to login if not authenticated
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || !session) {
+                window.location.href = '/login.html'
+            }
+        })
+
+        // Profile menu toggle
+        const profileBtn = document.getElementById('profileBtn')
+        const profileMenu = document.getElementById('profileMenu')
+        profileBtn.addEventListener('click', () => {
+            profileMenu.classList.toggle('hidden')
+        })
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await supabase.auth.signOut()
+                window.location.href = '/login.html'
+            } catch (error) {
+                console.error('Error logging out:', error)
+            }
+        })
+
+        // Load admin profile
+        async function loadAdminProfile() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    const { data: profile } = await supabase
+                        .from('admin_profiles')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .single()
+
+                    if (profile) {
+                        document.getElementById('adminName').textContent = profile.name || 'Admin'
+                        document.getElementById('profileImage').src = profile.avatar_url || `https://ui-avatars.com/api/?name=${profile.name || 'Admin'}&background=000&color=fff`
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error)
+            }
+        }
+
+        // Initialize charts
+        let enrollmentChart, applicationChart
+
+        async function initializeCharts() {
+            // Enrollment trends chart
+            const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d')
+            const { data: enrollments } = await supabase
+                .from('enrollments')
+                .select('created_at')
+                .order('created_at', { ascending: true })
+
+            const enrollmentData = processEnrollmentData(enrollments)
+            enrollmentChart = new Chart(enrollmentCtx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(enrollmentData),
+                    datasets: [{
+                        label: 'Enrollments',
+                        data: Object.values(enrollmentData),
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                }
+            })
+
+            // Application status chart
+            const applicationCtx = document.getElementById('applicationChart').getContext('2d')
+            const { data: applications } = await supabase
+                .from('applications')
+                .select('status')
+
+            const applicationData = processApplicationData(applications)
+            applicationChart = new Chart(applicationCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(applicationData),
+                    datasets: [{
+                        data: Object.values(applicationData),
+                        backgroundColor: ['#FCD34D', '#34D399', '#F87171']
+                    }]
+                }
+            })
+        }
+
+        // Process data for charts
+        function processEnrollmentData(enrollments) {
+            const data = {}
+            enrollments.forEach(enrollment => {
+                const month = new Date(enrollment.created_at).toLocaleString('default', { month: 'short' })
+                data[month] = (data[month] || 0) + 1
+            })
+            return data
+        }
+
+        function processApplicationData(applications) {
+            const data = {
+                'Pending': 0,
+                'Approved': 0,
+                'Rejected': 0
+            }
+            applications.forEach(app => {
+                data[app.status.charAt(0).toUpperCase() + app.status.slice(1)]++
+            })
+            return data
+        }
+
+        // Update dashboard stats
+        async function updateStats() {
+            try {
+                const stats = await Promise.all([
+                    supabase.from('students').select('*', { count: 'exact' }),
+                    supabase.from('applications').select('*', { count: 'exact' }),
+                    supabase.from('enrollments').select('*', { count: 'exact' }),
+                    supabase.from('students').select('*', { count: 'exact' }).eq('status', 'active')
+                ])
+
+                document.getElementById('totalStudents').textContent = stats[0].count
+                document.getElementById('newApplications').textContent = stats[1].count
+                document.getElementById('courseEnrollments').textContent = stats[2].count
+                document.getElementById('activeUsers').textContent = stats[3].count
+            } catch (error) {
+                console.error('Error updating stats:', error)
+            }
+        }
+
+        // Update applications table
+        async function updateApplicationsTable() {
+            try {
+                const { data: applications, error } = await supabase
+                    .from('applications')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(10)
+
+                if (error) throw error
+
+                const tableBody = document.getElementById('applicationsTable')
+                tableBody.innerHTML = applications.map(app => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${app.student_name}</div>
+                                    <div class="text-sm text-gray-500">${app.email}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.program}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${app.status === 'approved' ? 'green' : app.status === 'rejected' ? 'red' : 'yellow'}-100 text-${app.status === 'approved' ? 'green' : app.status === 'rejected' ? 'red' : 'yellow'}-800">
+                                ${app.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(app.created_at).toLocaleDateString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="viewApplication('${app.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">View</button>
+                            <button onclick="deleteApplication('${app.id}')" class="text-red-600 hover:text-red-900">Delete</button>
+                        </td>
+                    </tr>
+                `).join('')
+            } catch (error) {
+                console.error('Error updating applications table:', error)
+            }
+        }
+
+        // Application actions
+        async function viewApplication(id) {
+            // Implement view application logic
+            console.log('Viewing application:', id)
+        }
+
+        async function deleteApplication(id) {
+            try {
+                const { error } = await supabase
+                    .from('applications')
+                    .delete()
+                    .eq('id', id)
+
+                if (error) throw error
+                updateApplicationsTable()
+                updateStats()
+            } catch (error) {
+                console.error('Error deleting application:', error)
+            }
+        }
+
+        // Initialize dashboard
+        loadAdminProfile()
+        initializeCharts()
+        updateStats()
+        updateApplicationsTable()
+
+        // Refresh data periodically
+        setInterval(updateStats, 30000)
+        setInterval(updateApplicationsTable, 30000)
+    </script>
+</body>
+</html>
