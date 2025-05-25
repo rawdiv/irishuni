@@ -3,7 +3,8 @@ const SUPABASE_URL = 'https://yoarpzplrajhzsfwesyg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvYXJwenBscmFqaHpzZndlc3lnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNzc2NDEsImV4cCI6MjA2MzY1MzY0MX0.VaGJ6l5y2rFEkoe_1RelVr-wngaIOr4WZ5Qtnp34v4s';
 
 // Initialize Supabase client
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Handle form submission
 document.getElementById('applicationForm').addEventListener('submit', async (e) => {
@@ -24,8 +25,8 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
         const photoFile = formData.get('photo');
         let photoUrl = null;
 
-        if (photoFile.size > 0) {
-            const { data, error: uploadError } = await supabase.storage
+        if (photoFile && photoFile.size > 0) {
+            const { data, error: uploadError } = await supabaseClient.storage
                 .from('applicant-photos')
                 .upload(`${Date.now()}-${photoFile.name}`, photoFile);
 
@@ -34,7 +35,7 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
         }
 
         // Submit application data
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('applications')
             .insert([
                 {
@@ -49,10 +50,11 @@ document.getElementById('applicationForm').addEventListener('submit', async (e) 
 
         // Show success message
         alert('Application submitted successfully!');
+        e.target.reset();
         window.location.href = '/index.html';
-
     } catch (error) {
         console.error('Error submitting application:', error);
-        alert('Failed to submit application. Please try again.');
+        alert('Error submitting application. Please try again.');
+    }
     }
 });

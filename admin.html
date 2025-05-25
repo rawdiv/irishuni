@@ -118,13 +118,18 @@
     </div>
 
     <script>
-        // Check authentication status
-        const supabaseUrl = localStorage.getItem('SUPABASE_URL')
-        const supabaseAnonKey = localStorage.getItem('SUPABASE_ANON_KEY')
-        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey)
+        // Initialize Supabase client
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-        // Redirect to login if not authenticated
-        supabase.auth.onAuthStateChange((event, session) => {
+        // Check authentication status and redirect if not authenticated
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = '/login.html'
+            }
+        })
+
+        // Listen for auth state changes
+        supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT' || !session) {
                 window.location.href = '/login.html'
             }
@@ -140,23 +145,27 @@
         // Logout handler
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             try {
-                await supabase.auth.signOut()
+                const { error } = await supabaseClient.auth.signOut()
+                if (error) throw error
                 window.location.href = '/login.html'
             } catch (error) {
                 console.error('Error logging out:', error)
+                alert('Error logging out. Please try again.')
             }
         })
 
         // Load admin profile
         async function loadAdminProfile() {
             try {
-                const { data: { user } } = await supabase.auth.getUser()
+                const { data: { user } } = await supabaseClient.auth.getUser()
                 if (user) {
-                    const { data: profile } = await supabase
+                    const { data: profile, error } = await supabaseClient
                         .from('admin_profiles')
                         .select('*')
-                        .eq('user_id', user.id)
+                        .eq('id', user.id)
                         .single()
+
+                    if (error) throw error
 
                     if (profile) {
                         document.getElementById('adminName').textContent = profile.name || 'Admin'
@@ -165,6 +174,7 @@
                 }
             } catch (error) {
                 console.error('Error loading profile:', error)
+                alert('Error loading admin profile. Please try refreshing the page.')
             }
         }
 
@@ -174,10 +184,12 @@
         async function initializeCharts() {
             // Enrollment trends chart
             const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d')
-            const { data: enrollments } = await supabase
+            const { data: enrollments, error: enrollmentsError } = await supabaseClient
                 .from('enrollments')
                 .select('created_at')
                 .order('created_at', { ascending: true })
+
+            if (enrollmentsError) throw enrollmentsError
 
             const enrollmentData = processEnrollmentData(enrollments)
             enrollmentChart = new Chart(enrollmentCtx, {
@@ -195,9 +207,11 @@
 
             // Application status chart
             const applicationCtx = document.getElementById('applicationChart').getContext('2d')
-            const { data: applications } = await supabase
+            const { data: applications, error: applicationsError } = await supabaseClient
                 .from('applications')
                 .select('status')
+
+            if (applicationsError) throw applicationsError
 
             const applicationData = processApplicationData(applications)
             applicationChart = new Chart(applicationCtx, {
@@ -237,26 +251,34 @@
         // Update dashboard stats
         async function updateStats() {
             try {
-                const stats = await Promise.all([
-                    supabase.from('students').select('*', { count: 'exact' }),
-                    supabase.from('applications').select('*', { count: 'exact' }),
-                    supabase.from('enrollments').select('*', { count: 'exact' }),
-                    supabase.from('students').select('*', { count: 'exact' }).eq('status', 'active')
+                const [students, applications, enrollments, activeUsers] = await Promise.all([
+                    supabaseClient.from('students').select('*', { count: 'exact', head: true }),
+                    supabaseClient.from('applications').select('*', { count: 'exact', head: true }),
+                    supabaseClient.from('enrollments').select('*', { count: 'exact', head: true }),
+                    supabaseClient.from('students').select('*', { count: 'exact', head: true }).eq('status', 'active')
                 ])
 
-                document.getElementById('totalStudents').textContent = stats[0].count
-                document.getElementById('newApplications').textContent = stats[1].count
-                document.getElementById('courseEnrollments').textContent = stats[2].count
-                document.getElementById('activeUsers').textContent = stats[3].count
+                if (students.error) throw students.error
+                if (applications.error) throw applications.error
+                if (enrollments.error) throw enrollments.error
+                if (activeUsers.error) throw activeUsers.error
+
+                document.getElementById('totalStudents').textContent = students.count || 0
+                document.getElementById('newApplications').textContent = applications.count || 0
+                document.getElementById('courseEnrollments').textContent = enrollments.count || 0
+                document.getElementById('activeUsers').textContent = activeUsers.count || 0
             } catch (error) {
                 console.error('Error updating stats:', error)
+                const elements = ['totalStudents', 'newApplications', 'courseEnrollments', 'activeUsers']
+                elements.forEach(id => document.getElementById(id).textContent = 'Error')
+                alert('Error loading dashboard statistics. Please try refreshing the page.')
             }
         }
 
         // Update applications table
         async function updateApplicationsTable() {
             try {
-                const { data: applications, error } = await supabase
+                const { data: applications, error } = await supabaseClient
                     .from('applications')
                     .select('*')
                     .order('created_at', { ascending: false })
@@ -301,7 +323,7 @@
 
         async function deleteApplication(id) {
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('applications')
                     .delete()
                     .eq('id', id)
