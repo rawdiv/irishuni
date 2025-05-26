@@ -3,16 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
-    <script>
-        window.location.href = '/signup.html';
-    </script>
+    <title>Application Form - Iris Institute of Technology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js" type="module"></script>
 </head>
-<body>
-    <p>Redirecting to signup page...</p>
-</body>
-</html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +15,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="config.js" type="module"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body class="bg-gray-50">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
@@ -50,9 +46,8 @@
                                 <option value="prefer_not_to_say">Prefer not to say</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nationality</label>
-                            <input type="text" name="nationality" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <div class="mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+                            <strong>Application Fee:</strong> 499 INR (non-refundable)
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Category</label>
@@ -153,14 +148,6 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Specialization</label>
-                            <input type="text" name="specialization" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Preferred Batch</label>
-                            <input type="number" name="batch" required min="2024" max="2030" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        <div>
                             <label class="block text-sm font-medium text-gray-700">Mode of Study</label>
                             <select name="studyMode" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 <option value="">Select Mode</option>
@@ -224,62 +211,73 @@
                 </div>
 
                 <div class="flex justify-center">
-                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Submit Application</button>
+                    <button id="payAndSubmitBtn" type="button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Pay and Submit</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        import { supabase } from './config.js';
+        // Use global supabase and RAZORPAY_KEY_ID from config.js
+        function generateApplicationNumber() {
+            const prefix = 'IIT2024';
+            const timestamp = Date.now();
+            const random = Math.floor(100 + Math.random() * 900);
+            return `${prefix}${timestamp}${random}`;
+        }
 
-        document.getElementById('applicationForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const form = e.target;
+        document.getElementById('payAndSubmitBtn').addEventListener('click', async () => {
+            const form = document.getElementById('applicationForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
             const formData = new FormData(form);
-            
-            // Convert FormData to object
             const applicationData = {};
             for (let [key, value] of formData.entries()) {
                 applicationData[key] = value;
             }
 
-            try {
-                // Handle photo upload if provided
-                const photoFile = formData.get('photo');
-                let photoUrl = null;
-
-                if (photoFile.size > 0) {
-                    const { data, error } = await supabase.storage
-                        .from('applicant-photos')
-                        .upload(`${Date.now()}-${photoFile.name}`, photoFile);
-
-                    if (error) throw error;
-                    photoUrl = data.path;
+            const options = {
+                key: window.RAZORPAY_KEY_ID || RAZORPAY_KEY_ID,
+                amount: 49900,
+                currency: 'INR',
+                name: 'Iris Institute of Technology',
+                description: 'Application Fee',
+                handler: async function (response) {
+                    const applicationNumber = generateApplicationNumber();
+                    applicationData.application_number = applicationNumber;
+                    applicationData.razorpay_payment_id = response.razorpay_payment_id;
+                    try {
+                        const { data, error } = await supabase
+                            .from('applications')
+                            .insert([
+                                {
+                                    ...applicationData,
+                                    status: 'pending',
+                                    created_at: new Date().toISOString()
+                                }
+                            ]);
+                        if (error) throw error;
+                        alert('Application submitted successfully!\nYour Application Number: ' + applicationNumber);
+                        form.reset();
+                        window.location.href = '/thank-you.html';
+                    } catch (error) {
+                        console.error('Error submitting application:', error);
+                        alert('Error submitting application. Please try again.');
+                    }
+                },
+                prefill: {
+                    name: applicationData.fullName || '',
+                    email: applicationData.email || '',
+                    contact: applicationData.phone || ''
+                },
+                theme: {
+                    color: '#2563eb'
                 }
-
-                // Save application data
-                const { data, error } = await supabase
-                    .from('applications')
-                    .insert([
-                        {
-                            ...applicationData,
-                            photo_url: photoUrl,
-                            status: 'pending',
-                            created_at: new Date().toISOString()
-                        }
-                    ]);
-
-                if (error) throw error;
-
-                alert('Application submitted successfully!');
-                form.reset();
-                window.location.href = '/thank-you.html';
-
-            } catch (error) {
-                console.error('Error submitting application:', error);
-                alert('Error submitting application. Please try again.');
-            }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
         });
     </script>
 </body>

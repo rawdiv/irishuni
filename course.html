@@ -18,6 +18,11 @@
 
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', () => {
+            if (!courseName || !(courseName in courseDetails)) {
+                document.getElementById('courseDetails').innerHTML = '<p class="text-red-600">Invalid or missing course. Please select a valid course from the homepage.</p>';
+                document.getElementById('enrollButton').disabled = true;
+                return;
+            }
             initializePage();
         });
 
@@ -25,8 +30,8 @@
 
         // Course details mapping
         const courseDetails = {
-    // All courses will have a fee of ₹499
-    getFee: () => 499,
+    // All courses will have a fee of ₹3999
+    getFee: () => 3999,
             'python-data-science': {
                 title: 'Python for Data Science',
                 duration: '3 Months',
@@ -133,7 +138,7 @@
 
                 const options = {
                 key: RAZORPAY_KEY_ID,
-                amount: 49900,
+                amount: 399900,
                 currency: 'INR',
                 name: 'Iris Digital College',
                 description: `Course Enrollment: ${courseDetails[courseName].title}`,
@@ -183,6 +188,7 @@
                 displayCourseDetails();
                 const enrollButton = document.getElementById('enrollButton');
                 if (enrollButton) {
+                    enrollButton.disabled = false;
                     enrollButton.addEventListener('click', initializePayment);
                 } else {
                     console.error('Enroll button not found');
@@ -215,8 +221,9 @@
 
             <!-- Enrollment Section -->
             <div class="text-center mt-8">
-                <p class="text-2xl font-bold mb-4">Course Fee: ₹499</p>
-<p class="text-gray-600 mb-6">One-time application fee for lifetime access</p>
+                <p class="text-2xl font-bold mb-2">Course Fee: <span class="text-green-600">₹3999</span> <span class="line-through text-gray-500 text-lg ml-2">MRP ₹17999</span></p>
+                <p class="text-red-600 font-semibold mb-2">Limited seats available! Enroll now to secure your spot.</p>
+                <p class="text-gray-600 mb-6">One-time fee for lifetime access</p>
                 <button id="enrollButton" class="px-8 py-4 bg-black text-white text-xl font-bold rounded-xl hover:bg-gray-800 transition-colors duration-300">Enroll Now</button>
             </div>
         </div>
